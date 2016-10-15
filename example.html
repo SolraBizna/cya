@@ -1,0 +1,298 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+    <title>CYA Test</title>
+    <script src="cya.js"></script>
+    <!--
+        Any styling of the adventure is provided by the HTML.
+        
+        In addition to whatever tags the page author provides, CYA will
+        generate tags like the following:
+
+            <a class="cya_choice">An available choice</a>
+            <a class="cya_accepted_choice">A past choice that was taken</a>
+            <a class="cya_rejected_choice">A past choice that wasn't taken</a>
+            <div class="cya_page">Surrounds each complete page</div>
+        
+        This example Adventure also provides rudimentary styling for the raw
+        "source elements". Remove `display: none;` from the `#pages` rule to
+        see.
+      -->
+    <style type="text/css">
+      body { color: #000000; background-color: #cccccc; }
+      a.cya_rejected_choice { display: none; }
+      a.cya_choice,a.cya_accepted_choice,choice,ending { display: block; font-weight: bold; text-decoration: none; }
+      a.cya_choice,choice { cursor: pointer; color: inherit; }
+      ending { font-style: italic; }
+      a.cya_choice:hover,choice:hover { text-decoration: underline; }
+      a.cya_accepted_choice,a.cya_choice:active,choice:active { color: #777; }
+      a.cya_choice:before,a.cya_accepted_choice:before,choice:before { content: "> "; }
+      ending:before { content: "Game over; paste content of ending page, with ${ending} = "; }
+      eval:before { content: "$("; }
+      eval:after { content: ")"; }
+      execute { display: block; white-space: pre; font-family: monospace; }
+      img { max-width: 72ex; height: auto; }
+      #pages { border: 2px solid black; padding: 0.5ex 1.5ex 0.5ex 1.5ex; display: none; }
+      page { display: block; border: 1px solid black; padding: 0 1ex 0 1ex; }
+      #cya_playfield { border: 2px solid black; max-width: 75ex; padding: 1ex 1ex 1ex 1ex; }
+      .bottomspacer { height: 100%; }
+    </style>
+  </head>
+  <body>
+    <noscript>This adventure requires JavaScript to play.</noscript>
+    <!-- A script element like this one should be placed as early as possible
+         in the body. It contains any custom options needed by the Adventure.
+      -->
+    <script language="JavaScript">
+      cya.scroll_view = document.body;
+    </script>
+    <!-- By default, the Engine will append <page>s to the Element with ID
+         "cya_playfield". -->
+    <div id="cya_playfield"></div>
+    <!-- This div exists solely to hide the <page>s from the user. If you would
+         like to see the example's <page>s directly in your web browser, remove
+         display:none from the #pages rule in the stylesheet above. -->
+    <div id="pages">
+
+      <!-- An Adventure contains one or more <page> elements, each of which
+           corresponds to a single "page" of a Choose Your Own Adventure book.
+           When a given page is accessed, the Engine copies its elements to
+           the end of the playfield.
+
+           Some elements are special. We'll explain some of that here, but see
+           the readme for the full documentation. -->
+      <page name="start">
+        <!-- The contents of an <execute> element are JavaScript code that will
+             be executed whenever this <page> is accessed. -->
+        <execute>
+          score = 0;
+          hp = 50;
+          potions = 3;
+          boss_hp = 100;
+          armored = true;
+        </execute>
+        <p>You are at the entrance to a dark cave. A slow, eerie breeze blows from the mouth of the cave. The ancient enemy of your people lies within. If you slay him, your people will finally be free of his tyranny, and you will be remembered in song for hundreds of years.</p>
+        <!-- <choice> elements present a choice to the user. When the choice is
+             clicked, the target page is accessed.
+             
+             (We don't do this in the example adventure, but <choice>s may have
+             JavaScript code, which may optionally override the target page.)
+          -->
+        <choice target="enter">Enter the cave</choice>
+        <choice target="chicken">Leave this place for good</choice>
+      </page>
+
+      <page name="chicken">
+        <p>Being remembered is overrated. You return home, start a family, have many children, and die of old age.</p>
+        <!-- The <ending> element sets the global `ending` variable to the
+             given value, then brings up the ending page. -->
+        <ending>an unsatisfying, but prudent, end</ending>
+      </page>
+
+      <page name="enter">
+        <p>The cave is dark. (Fortunately, you have a lantern.) Soon you come to a fork. There are two ways to proceed:</p>
+        <choice target="spikes">Take the left path</choice>
+        <choice target="river">Take the right path</choice>
+      </page>
+
+      <page name="spikes">
+        <p>You come upon a clearly-artificial pit. At the bottom you think you see spikes. There is a lip, barely a couple centimeters wide.</p>
+        <choice target="ledge">Try to get past by moving along the lip</choice>
+        <choice target="jump">Get a running start to try to jump over the pit</choice>
+      </page>
+
+      <page name="ledge">
+        <p>There are a few heart-stopping moments as a bit of rock comes loose, but you make it across.</p>
+        <choice target="arena">Continue...</choice>
+      </page>
+
+      <page name="jump">
+        <p>You make the longest leap of your life. Unfortunately, it wasn't long enough. Just before impact, you notice that there <em>are</em> in fact spikes at the bottom of the pit. Luckily, one of them impales you through the head and your death is painless.</p>
+        <execute>score += 2</execute> <!-- You do get points for trying. -->
+        <ending>a bloody, ignominious end</ending>
+      </page>
+
+      <page name="river">
+        <p>You come upon an underground river. At one end of this little chamber the water appears thin but swift; at the other it is much deeper but is moving at a placid pace.</p>
+        <choice target="deep">Try to swim through the deep side</choice>
+        <choice target="shallow">Try to walk across the shallow side</choice>
+      </page>
+
+      <page name="shallow">
+        <p>You slip and nearly fall several times, but you manage to get across the river without too much trouble.</p>
+        <choice target="arena">Continue...</choice>
+      </page>
+
+      <page name="deep">
+        <p>You think you feel something brush against you as you swim through the frigid water. That soon proves to be the least of your worries. By the time you reach the other side, you are absolutely freezing. The breeze that permeates this cave isn't helping either.</p>
+        <choice target="strip">Take off your wet armor</choice>
+        <choice target="hypothermia">Press on</choice>
+      </page>
+
+      <page name="strip">
+        <execute>armored = false</execute>
+        <p>Now that your armor is no longer keeping you wet, the cold isn't so bad. You're a little self-conscious about the possibility of fighting an ancient evil in your underwear, though.</p>
+        <choice target="wait_dry">Wait until your armor dries off</choice>
+        <choice target="arena">No time to lose; press on</choice>
+      </page>
+
+      <page name="hypothermia">
+        <p>You press on. You don't even notice when you stop feeling cold anymore. You especially don't notice when you stop feeling <em>anything</em> anymore. You just go to sleep and never wake up.</p>
+        <ending>an anticlimactic end</ending>
+      </page>
+
+      <page name="wait_dry">
+        <p>It takes hours. You pass the time by singing quietly to yourself. Your armor has nearly dried when your lamp runs out of oil.</p>
+        <p>Unable to see, you have no hope of finding the way back out of the caves. After hours of wandering, you are stabbed from behind by something you didn't hear coming.</p>
+        <ending>a violent, unpleasant end</ending>
+      </page>
+
+      <page name="arena">
+        <p>Finally, you have reached your final destination. The lair of the evil demon who has been terrorizing your people for generations. Torches on the walls give off a strange, even, ghostly light. Piles of gold and other valuables are strewn haphazardly about the place, and the demon himself is sitting on a gilded throne. It appears that he has been waiting for your arrival.</p>
+        <p>He stands up and strides toward you. He's two and a half meters tall, with blue skin and bulging muscles. He's wearing nothing but a bright red loincloth, and armed with nothing but an enormous sword.</p>
+        <!-- The contents of an <if> element are only included in the page if
+             their condition is true. -->
+        <if condition="armored">
+          <p>He emits a bloodcurdling roar, and raises his sword.</p>
+          <choice target="fight">Time to fight!</choice>
+        </if>
+        <if condition="!armored">
+          <p>He stops to look you up and down. You blush, realizing that you left your armor behind at the river, and you are just as scantily clad as him. In spite of your own physical unremarkability, it seems he likes what he sees... he grins, and rests his sword on his shoulders.</p>
+          <choice target="unarmored_attack">Attack him</choice>
+          <choice target="cleopatra">Play along, wait for a vulnerable moment, and kill him while he's sleeping</choice>
+          <choice target="stockholm">Try to make this relationship work</choice>
+        </if>
+      </page>
+
+      <page name="unarmored_attack">
+        <execute>score += 10</execute> <!-- Points for courage -->
+        <p>You emit the best battle cry you can, and rush to meet him, sword at the ready.</p>
+        <choice target="fight">Time to fight!</choice>
+      </page>
+
+      <page name="stockholm">
+        <p>You give him your best seductive grin, and let your sheathed sword fall to the ground. You spend the rest of your days acting as the demon's second in command, reaping the benefits of his campaigns&mdash;and the rest of your nights making passionate love to him.</p>
+        <ending>a surprisingly sexy end</ending>
+      </page>
+
+      <page name="cleopatra">
+        <p>You give him your best seductive grin, and let your sheathed sword fall to the ground. After a night of passion&mdash;a quite enjoyable night, actually&mdash;the two of you are spooned together in his&mdash;surprisingly comfortable&mdash;bed.</p>
+        <choice target="anthony">Maybe there's something to this after all. Try to make this relationship work</choice>
+        <choice target="caesar">Now, when he's vulnerable, kill him!</choice>
+      </page>
+
+      <page name="anthony">
+        <p>You spend the rest of your days acting as the demon's second in command, reaping the benefits of his campaigns&mdash;and the rest of your nights making passionate love to him.</p>
+        <ending>an unexpectedly sexy end</ending>
+      </page>
+
+      <page name="caesar">
+        <p>Quietly, carefully, you grab your sword. You position its tip on the back of his neck, and then drive downward with all your weight. The blow cleanly severs his head&mdash;an excellent trophy for your return.</p>
+        <p>You spend the rest of your life enjoying the undying adoration of your people... and feeling as though you didn't quite earn it.</p>
+        <ending>a dishonorable, but positive end</ending>
+      </page>
+
+      <page name="fight">
+        <!-- <eval> elements contain a JavaScript expression whose value is
+             placed directly into the page.
+
+             The simplest use is to simply provide the name of a variable, as
+             is done here. -->
+        <p>You have <eval>hp</eval>/50 HP, and the demon has <eval>boss_hp</eval>/100 HP.
+        <if condition="potions > 0">
+          You also have <eval>potions</eval> potion<eval>potions == 1 ? "" : "s"</eval>. A potion heals 30 HP.
+        </if>
+        </p>
+        <choice target="attack">Attack!</choice>
+        <if condition="potions > 0">
+          <choice target="potion">Drink a potion!</choice>
+        </if>
+      </page>
+
+      <page name="attack">
+        <p>You swing your sword, dealing 10 damage.</p>
+        <execute>
+          boss_hp -= 10;
+          cya.page("defend");
+        </execute>
+      </page>
+
+      <page name="potion">
+        <p>You drink a potion, restoring 30 HP.
+          <execute>
+            potions -= 1;
+            hp += 30;
+            // `cya.page(...)` queues the given page up to be displayed. If CYA
+            // is in the middle of processing a page, it will finish the
+            // current page before moving on to the one passed here. You may
+            // queue up as many pages as you like.
+            cya.page("defend");
+            if(hp > 50) {
+              hp = 50;
+              return "(Some of it was wasted.)";
+            }
+          </execute>
+        </p>
+      </page>
+
+      <page name="defend">
+        <!-- <if> and <execute> can be combined in quite complicated ways.
+             This section might better have been written as a single <execute>
+             tag that builds the text, but this shows how powerful (and clumsy)
+             CYA's building blocks are. -->
+        <p>
+        <if condition="boss_hp <= 0">
+          With his dying breath, the demon swings his sword one last time,
+        </if>
+        <if condition="boss_hp > 0">
+          The demon swings his sword,
+        </if>
+        <if condition="armored">
+          dealing 10 damage.
+          <execute>hp -= 10;</execute>
+        </if>
+        <if condition="!armored">
+          dealing 20 damage to your bare skin.
+          <execute>hp -= 20;</execute>
+        </if>
+        </p>
+        <if condition="hp <= 0">
+          <if condition="boss_hp <= 0">
+            <p>You managed to slay the demon. Unfortunately, since you did not survive to tell anyone, nobody will ever know it was you.</p>
+            <ending>a meaningful, but unknown end</ending>
+          </if>
+          <if condition="boss_hp > 0">
+            <p>You die...</p>
+            <ending>a bloody, futile end</ending>
+          </if>
+          <if condition="potions > 0">
+            <p>(Use more potions next time!)</p>
+          </if>
+        </if>
+        <if condition="hp > 0">
+          <if condition="boss_hp <= 0">
+            <p>You managed to slay the demon! You hack off his head and return with it as a trophy.</p>
+            <p>You spend the rest of your life enjoying the undying adoration of your people... safe in the knowledge that you've earned it.</p>
+            <ending>(arguably) the best possible end</ending>
+          </if>
+          <if condition="boss_hp > 0">
+            <!-- Rather than giving a <choice> here, we go straight back to the
+                 "fight" page. -->
+            <execute>cya.page("fight")</execute>
+          </if>
+        </if>
+      </page>
+      
+      <page name="ending">
+        <p>Congratulations! You have achieved <eval>ending</eval>.</p>
+        <p>Your score was <eval>score</eval> points.</p>
+        <choice target="start">Start over</choice>
+      </page>
+
+    </div>
+    <!-- This element is always at least as tall as the browser window. It
+         ensures that the Engine can always scroll far enough that the last
+         selected <choice> is at the top of the window. -->
+    <div class="bottomspacer"></div>
+  </body>
+</html>
