@@ -270,7 +270,7 @@ var cya = {
         }
         if(target_page) {
             cya.page(this.target_page);
-            var scroll_view = element_parameter(cya.scrollview);
+            var scroll_view = element_parameter(cya.scroll_view);
             if(scroll_view) {
                 // inspired by: https://www.kirupa.com/html5
                 // /get_element_position_using_javascript.htm
