@@ -193,11 +193,13 @@ When a `<choice>` is presented, it is in one of three ways:
     <a class="cya_accepted_choice" href="...">A previously-available choice which the user selected</a>
     <a class="cya_rejected_choice" href="...">A previously-available choice which the user did not select</a>
 
-Most adventures will want CSS like:
+Most Adventures will want CSS like:
 
     a.cya_rejected_choice {display:none;}
 
-so that rejected choices are hidden.
+so that rejected choices are hidden. Other Adventures may want to set
+`pivot_choices` to true, so that the accepted choice is moved to the end of
+the list (especially if they use `scroll_view`).
 
 Most `<choice>`s will have a `target` attribute naming the `<page>` that
 will be presented if that choice is made. For nearly all Adventures, this is
@@ -304,6 +306,15 @@ Default value: `undefined`
 An `Element` that will have its height adjusted dynamically, so that the
 `scroll_view` can always scroll at least as far down as the selected
 choice. (Only applicable if `scroll_view` is also defined.)
+
+`cya.pivot_choices`
+-------------------
+
+Default value: `false`
+
+If `pivot_choices` is true, any `<choice>` selected by the player is
+moved to the end of its page. This is useful if rejected choices are not
+hidden, especially if `scroll_view` is used.
 
 Engine Functions
 ================
