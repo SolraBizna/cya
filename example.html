@@ -35,7 +35,6 @@
       #pages { border: 2px solid black; padding: 0.5ex 1.5ex 0.5ex 1.5ex; display: none; }
       page { display: block; border: 1px solid black; padding: 0 1ex 0 1ex; }
       #cya_playfield { border: 2px solid black; max-width: 75ex; padding: 1ex 1ex 1ex 1ex; }
-      .bottomspacer { height: 100%; }
     </style>
   </head>
   <body>
@@ -45,6 +44,7 @@
       -->
     <script language="JavaScript">
       cya.scroll_view = document.body;
+      cya.scroll_spacer = "cya_spacer";
     </script>
     <!-- By default, the Engine will append <page>s to the Element with ID
          "cya_playfield". -->
@@ -293,6 +293,6 @@
     <!-- This element is always at least as tall as the browser window. It
          ensures that the Engine can always scroll far enough that the last
          selected <choice> is at the top of the window. -->
-    <div class="bottomspacer"></div>
+    <div id="cya_spacer"></div>
   </body>
 </html>

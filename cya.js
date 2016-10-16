@@ -202,6 +202,12 @@ var cya = {
      * A useful value is `document.body`.
      */
     scroll_view:undefined,
+    /**
+     * An `Element` that will have its height adjusted dynamically, so that the
+     * `scroll_view` can always scroll at least as far down as the selected
+     * choice. (Only applicable if `scroll_view` is also defined.)
+     */
+    scroll_spacer:undefined,
 };
 
 /**FUNCTION:Engine Functions
@@ -271,7 +277,7 @@ var cya = {
         if(target_page) {
             cya.page(this.target_page);
             var scroll_view = element_parameter(cya.scroll_view);
-            if(scroll_view) {
+            if(scroll_view != undefined) {
                 // inspired by: https://www.kirupa.com/html5
                 // /get_element_position_using_javascript.htm
                 var y = 0;
@@ -280,8 +286,17 @@ var cya = {
                     y += (el.offsetTop - el.scrollTop + el.clientTop);
                     el = el.offsetParent;
                 }
-                if(el == scroll_view)
+                if(el == scroll_view) {
+                    var spacer = element_parameter(cya.scroll_spacer);
+                    if(spacer != undefined) {
+                        spacer.setAttribute("style", "height:100%");
+                        var space = Math.max(0, scroll_view.clientHeight
+                                             - (scroll_view.scrollHeight - y
+                                                - spacer.clientHeight));
+                        spacer.setAttribute("style", "height:"+space);
+                    }
                     scroll_view.scrollTop = y;
+                }
                 else if(console != undefined)
                     console.log("A <choice> was selected that was not a child"
                                 +" of the scroll_view!");

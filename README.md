@@ -280,6 +280,15 @@ be undefined, in which case automatic scrolling is disabled.
 
 A useful value is `document.body`.
 
+`cya.scroll_spacer`
+-------------------
+
+Default value: `undefined`
+
+An `Element` that will have its height adjusted dynamically, so that the
+`scroll_view` can always scroll at least as far down as the selected
+choice. (Only applicable if `scroll_view` is also defined.)
+
 Engine Functions
 ================
 
