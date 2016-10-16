@@ -148,6 +148,22 @@ NOTE: The following scenarios _are_ specifically intended to be permitted:
   intact, and with a `@source` line pointing to the exact copy of `cya.js` from
   which the minified version was created.
 
+Useful Git Hook
+---------------
+
+If you are making changes to `cya.js`, creating a `.git/hooks/pre-commit` with the following contents will make your life easier.
+
+    #!/bin/sh
+    
+    if [ cya.js -nt cya.min.js -o cya.js -nt README.md ]; then
+        echo "Did you forget to run rebuild.sh before committing?"
+        exit 1
+    fi
+
+This won't prevent you from forgetting to include `cya.min.js` and `README.md`
+in a commit, but it will protect you from a mistake I make frequently
+(forgetting to rebuild them at all).
+
 ]]
 local function outf(format,...) return f:write(format:format(...)) end
 
