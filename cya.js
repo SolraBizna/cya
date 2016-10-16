@@ -383,7 +383,9 @@ var cya = {
             window.alert("Playfield not found! We can't do anything!");
             return;
         }
-        var next_page = page_cache[page];
+        var next_page;
+        if(page instanceof Element) next_page = page;
+        else next_page = page_cache[page];
         if(next_page == undefined) {
             if(cya.pages.namedItem) next_page = cya.pages.namedItem(page);
             if(next_page == undefined) {
