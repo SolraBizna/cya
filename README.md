@@ -211,6 +211,11 @@ attribute. The code within will be executed before the next page is
 presented. If it `return`s a `Page`, that `Page` will be used in place of
 the `target` attribute.
 
+If an `eval` attribute is present, then it contains a JavaScript expression
+that is evaluated, and treated just like the return value of an `execute`
+attribute. If both `eval` and `execute` are present, `execute` applies
+first and then `eval` is evaluated.
+
 &lt;ending&gt;
 --------------
 
@@ -272,7 +277,7 @@ value is only used by the Engine once, when the Adventure is loaded.
 
 User code may choose to respect this value with something like:
 
-    <choice execute="return cya.start_page">Restart</choice>
+    <choice eval="cya.start_page">Restart</choice>
 
 `cya.ending_page`
 -----------------

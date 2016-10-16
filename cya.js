@@ -135,6 +135,11 @@
  * attribute. The code within will be executed before the next page is
  * presented. If it `return`s a `Page`, that `Page` will be used in place of
  * the `target` attribute.
+ *
+ * If an `eval` attribute is present, then it contains a JavaScript expression
+ * that is evaluated, and treated just like the return value of an `execute`
+ * attribute. If both `eval` and `execute` are present, `execute` applies
+ * first and then `eval` is evaluated.
  */
 /**<ending>
  * When an `<ending>` element is encountered, the JavaScript variable `ending`
@@ -186,7 +191,7 @@ var cya = {
      *
      * User code may choose to respect this value with something like:
      *
-     *     <choice execute="return cya.start_page">Restart</choice>
+     *     <choice eval="cya.start_page">Restart</choice>
      */
     start_page:"start",
     /**
@@ -325,6 +330,45 @@ var cya = {
         }
     }
 
+    // When passed an `Element` that can have code, it returns a `Function`
+    // for that code or null if there is no code. For other `Element`s, it
+    // always returns `null`.
+    //
+    // If `lowerName` is specified, it overrides the value of node.localName.
+    // It should be specified if the lowercased name of the node is already
+    // known, so that it does not have to be redundantly retrieved and case
+    // folded.
+    var node_code = function(node, lowerName) {
+        if(node.cached_code !== undefined) return node.cached_code;
+        if(lowerName == undefined) lowerName = node.localName.toLowerCase();
+        switch(lowerName) {
+        case "choice":
+            var all_code = [];
+            if(node.hasAttribute("execute"))
+                all_code.push(node.getAttribute("execute"));
+            if(node.hasAttribute("eval"))
+                all_code.push("return ("+node.getAttribute("eval")+")");
+            if(all_code.length > 0)
+                node.cached_code = new Function(all_code.join("\n"));
+            break;
+        case "if":
+            if(node.hasAttribute("condition"))
+                node.cached_code =
+                new Function("return ("+node.getAttribute("condition")+")");
+            break;
+        case "eval":
+            if(node.cached_code == undefined)
+                node.cached_code = new Function("return ("+node.innerText+")");
+            break;
+        case "execute":
+            if(node.cached_code == undefined)
+                node.cached_code = new Function(node.innerText);
+            break;
+        }
+        if(node.cached_code === undefined) node.cached_code = null;
+        return node.cached_code;
+    }
+
     // Creates a `choice` object for a given `<choice>` element (`source_node`)
     // which is being used to create a given `<a>` element (`real_node`), and
     // attaches that `choice` object to the `<a>` element. Extracts all
@@ -335,13 +379,7 @@ var cya = {
         if(source_node.hasAttribute("target")) {
             choice.target_page = source_node.getAttribute("target");
         }
-        if(source_node.hasAttribute("execute")) {
-            if(source_node.cached_code == undefined) {
-                source_node.cached_code
-                    = new Function(source_node.getAttribute("execute"));
-            }
-            choice.code = source_node.cached_code;
-        }
+        choice.code = node_code(source_node, "choice");
         choice.listener = choice_listener.bind(choice);
         real_node.addEventListener("click", choice.listener)
     }
@@ -355,7 +393,8 @@ var cya = {
         for(var i = 0; source.childNodes[i]; ++i) {
             var child = source.childNodes[i];
             if(child.nodeType == document.ELEMENT_NODE) {
-                switch(child.localName) {
+                var lowerName = child.localName.toLowerCase();
+                switch(lowerName) {
                 case "choice":
                     var nu = document.createElement("a");
                     register_choice(nu, child);
@@ -369,28 +408,28 @@ var cya = {
                     cya.page(cya.ending_page);
                     break;
                 case "if":
-                    if(child.cached_code == undefined) {
-                        child.cached_code = new Function("return ("+child.getAttribute("condition")+")");
+                    var code = node_code(child, lowerName);
+                    if(code) {
+                        if(code())
+                            append_and_translate_children(target, child);
                     }
-                    if(child.cached_code())
-                        append_and_translate_children(target, child);
+                    else if(console != undefined)
+                        console.log("There is an <if> without a condition");
                     break;
                 case "eval":
-                    if(child.cached_code == undefined) {
-                        child.cached_code = new Function("return ("+child.innerText+")");
-                    }
-                    // sneaky fall through...
                 case "execute":
-                    if(child.cached_code == undefined) {
-                        child.cached_code = new Function(child.innerText);
+                    var code = node_code(child, lowerName);
+                    if(code) {
+                        var result = code();
+                        if(result != undefined) {
+                            if(result instanceof Element)
+                                target.appendChild(result);
+                            else
+                                target.appendChild(document
+                                                   .createTextNode(result));
+                        }
                     }
-                    var result = child.cached_code();
-                    if(result != undefined) {
-                        if(result instanceof Element)
-                            target.appendChild(result);
-                        else
-                            target.appendChild(document.createTextNode(result));
-                    }
+                    /* code should never be undefined */
                     break;
                 default:
                     var nu = child.cloneNode(false);
