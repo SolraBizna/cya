@@ -221,6 +221,17 @@ var cya = {
      * hidden, especially if `scroll_view` is used.
      */
     pivot_choices:false,
+    /**
+     * tl;dr: Set this to true to check your Adventure for errors every time it
+     * loads.
+     *
+     * If `validate_on_load` is true, `cya.validate()` is automatically called
+     * on every `<page>` that `cya.findpages()` finds. (`cya.findpages()` is
+     * called automatically when the Adventure first loads.) This will slow
+     * down loading, especially for large Adventures. You may wish to set it to
+     * `true` while testing your Adventure, and `false` when you deploy.
+     */
+    validate_on_load:false,
 };
 
 /**FUNCTION:Engine Functions
@@ -250,12 +261,34 @@ var cya = {
     // returns.)
     var inside_page = false;
 
-    // If the parameter is an Element, returns it. Otherwise, attempt to find
-    // an element with that ID.
+    // If the parameter is an `Element`, returns it. Otherwise, attempts to
+    // return an `Element` with that ID.
     var element_parameter = function(el) {
         if(el == null) return null;
         else if(el instanceof Element) return el;
         else return document.getElementById(el);
+    }
+
+    // If the parameter is an `Element`, returns it. Otherwise, attempts to
+    // find a `<page>` with that name.
+    var find_page = function(page) {
+        var ret = undefined;
+        if(page instanceof Element) ret = page;
+        else ret = page_cache[page];
+        if(ret == undefined) {
+            if(cya.pages.namedItem) ret = cya.pages.namedItem(page);
+            if(ret == undefined) {
+                // try a linear search
+                for(var i = 0; cya.pages[i]; ++i) {
+                    if(cya.pages[i].getAttribute("name") == page) {
+                        ret = cya.pages[i];
+                        break;
+                    }
+                }
+            }
+            page_cache[page] = ret;
+        }
+        return ret;
     }
     
     // Disables all previously-active `choice`s. The parameter is a `choice`;
@@ -458,22 +491,7 @@ var cya = {
             window.alert("Playfield not found! We can't do anything!");
             return;
         }
-        var next_page;
-        if(page instanceof Element) next_page = page;
-        else next_page = page_cache[page];
-        if(next_page == undefined) {
-            if(cya.pages.namedItem) next_page = cya.pages.namedItem(page);
-            if(next_page == undefined) {
-                // try a linear search
-                for(var i = 0; cya.pages[i]; ++i) {
-                    if(cya.pages[i].getAttribute("name") == page) {
-                        next_page = cya.pages[i];
-                        break;
-                    }
-                }
-            }
-            page_cache[page] = next_page;
-        }
+        var next_page = find_page(page);
         if(next_page == undefined) {
             window.alert("Page not found: "+page);
         }
@@ -489,6 +507,54 @@ var cya = {
             return cya.page(deferred_page);
     }
 
+    // Does the grunt work of `cya.validate()`
+    var recursively_validate = function(node, pageName) {
+        if(node.nodeType != document.ELEMENT_NODE) return true;
+        var ret = true;
+        var nodeName = node.localName.toLowerCase();
+        switch(nodeName) {
+        case "choice":
+            if(node.hasAttribute("target")) {
+                if(find_page(node.getAttribute("target")) == undefined) {
+                    console.log("page \""+pageName+"\": references a"
+                                +" nonexistent page: "
+                                +node.getAttribute("target"));
+                    ret = false;
+                }
+            }
+            break;
+        }
+        try {
+            node_code(node);
+        }
+        catch(e) {
+            console.log("page \""+pageName+"\": error while compiling"
+                        +" JavaScript code: "+e.message);
+            ret = false;
+        }
+        if(node.childNodes != undefined) {
+            for(var i = 0; node.childNodes[i]; ++i) {
+                ret = recursively_validate(node.childNodes[i],
+                                           pageName) && ret;
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Validates a `<page>`. Makes sure that all of its JavaScript code
+     * compiles, and none of its `<choice>` elements refer to a nonexistent
+     * page. (Note: `<choice>` elements that select a nonexistent page through
+     * JavaScript cannot be detected.)
+     *
+     * Returns `true` if the page validated, and `false` if it didn't.
+     */
+    cya.validate = function(page) {
+        var pageName = page.getAttribute("name");
+        if(pageName == undefined) pageName = "(an unnamed page)";
+        return recursively_validate(page, pageName);
+    }
+
     /**
      * Locates all `<page>` elements in the Adventure, and caches their names
      * so they can be retrieved quickly.
@@ -499,16 +565,23 @@ var cya = {
      * Adventure's DOM tree. (If you are building `<page>` `Elements`
      * dynamically and passing them around directly, you do _not_ need to call
      * this function as those are not being accessed by name.)
+     *
+     * Returns true if all pages validated (or no pages were checked), and
+     * false if validation of at least one page failed.
      */
     cya.findpages = function() {
+        var ok = true;
         cya.pages = document.getElementsByTagName("page");
         page_cache = {}
         for(var i = 0; cya.pages[i]; ++i) {
             var name = cya.pages[i].getAttribute("name");
-            if(name != undefined) {
+            if(name != undefined)
                 page_cache[name] = cya.pages[i];
-            }
+            else if(console != undefined)
+                console.log("Warning: found an unnamed <page>!");
+            if(cya.validate_on_load) ok = cya.validate(cya.pages[i]) && ok;
         }
+        return ok;
     }
 
     // Initializes the Adventure. This consists of calling `cya.findpages()`,
@@ -516,10 +589,17 @@ var cya = {
     // `scroll_view` to the top.
     // This is called automatically when the `DOMContentLoaded` event fires.
     var init = function() {
-        cya.findpages();
-        cya.page(cya.start_page);
-        if(cya.scroll_view) {
-            cya.scroll_view.scrollTop = 0;
+        if(cya.findpages()) {
+            cya.page(cya.start_page);
+            if(cya.scroll_view) {
+                cya.scroll_view.scrollTop = 0;
+            }
+        }
+        else {
+            var fakePage = document.createElement("page");
+            fakePage.innerText = "Adventure validation failed. See the"
+        +" JavaScript console for details.";
+            cya.page(fakePage);
         }
     }
     document.addEventListener("DOMContentLoaded", init);

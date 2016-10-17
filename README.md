@@ -321,6 +321,20 @@ If `pivot_choices` is true, any `<choice>` selected by the player is
 moved to the end of its page. This is useful if rejected choices are not
 hidden, especially if `scroll_view` is used.
 
+`cya.validate_on_load`
+----------------------
+
+Default value: `false`
+
+tl;dr: Set this to true to check your Adventure for errors every time it
+loads.
+
+If `validate_on_load` is true, `cya.validate()` is automatically called
+on every `<page>` that `cya.findpages()` finds. (`cya.findpages()` is
+called automatically when the Adventure first loads.) This will slow
+down loading, especially for large Adventures. You may wish to set it to
+`true` while testing your Adventure, and `false` when you deploy.
+
 Engine Functions
 ================
 
@@ -335,6 +349,16 @@ after Adventure load; if called recursively (as from an `<execute>`
 element inside a `<page>`), the page will be presented immediately after
 all currently-processing `Page`s.
 
+`cya.validate(page)`
+--------------------
+
+Validates a `<page>`. Makes sure that all of its JavaScript code
+compiles, and none of its `<choice>` elements refer to a nonexistent
+page. (Note: `<choice>` elements that select a nonexistent page through
+JavaScript cannot be detected.)
+
+Returns `true` if the page validated, and `false` if it didn't.
+
 `cya.findpages()`
 -----------------
 
@@ -347,4 +371,7 @@ you are dynamically adding or removing `<page>` elements from the
 Adventure's DOM tree. (If you are building `<page>` `Elements`
 dynamically and passing them around directly, you do _not_ need to call
 this function as those are not being accessed by name.)
+
+Returns true if all pages validated (or no pages were checked), and
+false if validation of at least one page failed.
 
