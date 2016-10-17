@@ -367,13 +367,13 @@ var cya = {
     // for that code or null if there is no code. For other `Element`s, it
     // always returns `null`.
     //
-    // If `lowerName` is specified, it overrides the value of node.localName.
+    // If `lowerName` is specified, it overrides the value of node.tagName.
     // It should be specified if the lowercased name of the node is already
     // known, so that it does not have to be redundantly retrieved and case
     // folded.
     var node_code = function(node, lowerName) {
         if(node.cached_code !== undefined) return node.cached_code;
-        if(lowerName == undefined) lowerName = node.localName.toLowerCase();
+        if(lowerName == undefined) lowerName = node.tagName.toLowerCase();
         switch(lowerName) {
         case "choice":
             var all_code = [];
@@ -426,7 +426,7 @@ var cya = {
         for(var i = 0; source.childNodes[i]; ++i) {
             var child = source.childNodes[i];
             if(child.nodeType == document.ELEMENT_NODE) {
-                var lowerName = child.localName.toLowerCase();
+                var lowerName = child.tagName.toLowerCase();
                 switch(lowerName) {
                 case "choice":
                     var nu = document.createElement("a");
@@ -511,7 +511,7 @@ var cya = {
     var recursively_validate = function(node, pageName) {
         if(node.nodeType != document.ELEMENT_NODE) return true;
         var ret = true;
-        var nodeName = node.localName.toLowerCase();
+        var nodeName = node.tagName.toLowerCase();
         switch(nodeName) {
         case "choice":
             if(node.hasAttribute("target")) {
