@@ -130,6 +130,11 @@
  * will be presented if that choice is made. For nearly all Adventures, this is
  * all that's required. (e.g. `<choice target="caves4">`)
  *
+ * If the `enable_hotkeys` engine variable is true, `<choice>`s may have a
+ * `hotkey` attribute giving the hotkey to use. You should only use numbers and
+ * lowercase ASCII letters for these hotkeys. `<choice>`s with no `hotkey`
+ * attribute will use the first hotkey 1-0 that is available (or none).
+ *
  * Advanced Adventures may wish to execute some JavaScript code when a
  * particular choice is made. They can do so by providing an `execute`
  * attribute. The code within will be executed before the next page is
@@ -203,6 +208,21 @@ var cya = {
      */
     playfield:"cya_playfield",
     /**
+     * If true, choices can be selected by using the 1-0 keys to target
+     * the first through tenth choices. In addition,
+     * `<span class="cya_hotkey">#</span>` will precede the contents of each
+     * choice, where `#` is the hotkey. The hotkeys are always accessible using
+     * browser-specific AccessKeys, and are accessible directly whenever focus
+     * is not inside an `<input>` or `<textarea>` element.
+     *
+     * `<choice>` elements with an explicit `hotkey` attribute will use that
+     * hotkey instead of 1-0.
+     *
+     * Changes made to `enable_hotkeys` will take effect the next time a page
+     * is processed.
+     */
+    enable_hotkeys:true,
+    /**
      * The `Element` that will be scrolled when a `<choice>` is selected. May
      * be undefined, in which case automatic scrolling is disabled.
      *
@@ -250,6 +270,12 @@ var cya = {
     // was made (so we can disable previous `choice`s when one is made)
     // `choice` objects have no formal identity
     var current_choices = [];
+
+    // Maps active `choice`s to hotkeys.
+    var current_hotkeys = {};
+
+    // List of default hotkeys to use.
+    var DEFAULT_HOTKEYS = ["1","2","3","4","5","6","7","8","9","0"];
 
     // Queue of `Page`s that were requested while a `Page` was already in the
     // process of being processed
@@ -302,6 +328,7 @@ var cya = {
         for(var i = 0; current_choices[i]; ++i) {
             var dis = current_choices[i];
             dis.node.removeAttribute("href");
+            dis.node.removeAttribute("accesskey");
             if(dis == accepted_choice) {
                 dis.node.setAttribute("class","cya_accepted_choice");
                 /* only pivot if there is more than one choice */
@@ -321,6 +348,7 @@ var cya = {
             last_node.parentNode.appendChild(node_to_pop);
         }
         current_choices = [];
+        current_hotkeys = {};
     }
 
     // The event listener attached to the `click` event of a `choice`.
@@ -415,6 +443,27 @@ var cya = {
         choice.code = node_code(source_node, "choice");
         choice.listener = choice_listener.bind(choice);
         real_node.addEventListener("click", choice.listener)
+        var chosen_hotkey = undefined;
+        if(source_node.hasAttribute("hotkey"))
+            chosen_hotkey = source_node.getAttribute("hotkey");
+        if(chosen_hotkey == undefined) {
+            for(var i in DEFAULT_HOTKEYS) {
+                var hotkey = DEFAULT_HOTKEYS[i];
+                if(current_hotkeys[hotkey] == undefined) {
+                    chosen_hotkey = hotkey;
+                    break;
+                }
+            }
+        }
+        if(chosen_hotkey != undefined) {
+            choice.hotkey = chosen_hotkey;
+            current_hotkeys[hotkey] = choice
+            var hotspan = document.createElement("span");
+            hotspan.setAttribute("class", "cya_hotkey");
+            hotspan.appendChild(document.createTextNode(chosen_hotkey));
+            choice.node.appendChild(hotspan);
+            choice.node.setAttribute("accesskey", chosen_hotkey);
+        }
     }
 
     // `source` is an `Element` from the tree of a `Page`. `target` is the
@@ -474,6 +523,26 @@ var cya = {
             else {
                 target.appendChild(child.cloneNode(true));
             }
+        }
+    }
+
+    // Handles a keydown event.
+    var keydown = function(e) {
+        if(!cya.enable_hotkeys) return;
+        if(e.ctrlKey || e.shiftKey || e.metaKey || e.altKey) return;
+        var target = e.target;
+        if(target != undefined && (target.tagName == "INPUT"
+                                   || target.tagName == "TEXTAREA"))
+            return;
+        var key;
+        if(e.key) key = e.key;
+        else if(e.keyCode) key = string.fromCharCode(e.keyCode);
+        else return;
+        if(current_hotkeys[key] != undefined) {
+            var choice = current_hotkeys[key];
+            if(e.stopPropagation) e.stopPropagation();
+            if(e.preventDefault) e.preventDefault();
+            choice.listener(e);
         }
     }
 
@@ -594,6 +663,7 @@ var cya = {
             if(cya.scroll_view) {
                 cya.scroll_view.scrollTop = 0;
             }
+            document.addEventListener("keydown", keydown, false);
         }
         else {
             var fakePage = document.createElement("page");
@@ -602,7 +672,7 @@ var cya = {
             cya.page(fakePage);
         }
     }
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", init, false);
 })()
 
 // @license-end

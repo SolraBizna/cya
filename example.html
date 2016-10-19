@@ -26,7 +26,10 @@
       ending { font-style: italic; }
       a.cya_choice:hover,choice:hover { text-decoration: underline; }
       a.cya_accepted_choice,a.cya_choice:active,choice:active { color: #777; }
-      a.cya_choice:before,a.cya_accepted_choice:before,choice:before { content: "> "; }
+      a.cya_accepted_choice:before,choice:before { content: "> "; }
+      .cya_hotkey:after { content: ": "; }
+      .cya_hotkey { text-transform: uppercase; }
+      a.cya_accepted_choice .cya_hotkey { display: none; }
       ending:before { content: "Game over; paste content of ending page, with ${ending} = "; }
       eval:before { content: "$("; }
       eval:after { content: ")"; }
@@ -38,7 +41,6 @@
     </style>
   </head>
   <body>
-    <noscript>This adventure requires JavaScript to play.</noscript>
     <!-- A script element like this one should be placed as early as possible
          in the body. It contains any custom options needed by the Adventure.
       -->
@@ -48,7 +50,12 @@
     </script>
     <!-- By default, the Engine will append <page>s to the Element with ID
          "cya_playfield". -->
-    <div id="cya_playfield"></div>
+    <div id="cya_playfield">
+      <noscript>This adventure requires JavaScript to play.</noscript>
+      <p>This is an example Adventure using the CYA Engine. Read the page's
+        source code for implementation details.</p>
+      <hr>
+    </div>
     <!-- This div exists solely to hide the <page>s from the user. If you would
          like to see the example's <page>s directly in your web browser, remove
          display:none from the #pages rule in the stylesheet above. -->
@@ -286,7 +293,7 @@
       <page name="ending">
         <p>Congratulations! You have achieved <eval>ending</eval>.</p>
         <p>Your score was <eval>score</eval> points.</p>
-        <choice target="start">Start over</choice>
+        <choice target="start" hotkey="r">Start over</choice>
       </page>
 
     </div>

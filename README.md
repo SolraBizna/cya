@@ -205,6 +205,11 @@ Most `<choice>`s will have a `target` attribute naming the `<page>` that
 will be presented if that choice is made. For nearly all Adventures, this is
 all that's required. (e.g. `<choice target="caves4">`)
 
+If the `enable_hotkeys` engine variable is true, `<choice>`s may have a
+`hotkey` attribute giving the hotkey to use. You should only use numbers and
+lowercase ASCII letters for these hotkeys. `<choice>`s with no `hotkey`
+attribute will use the first hotkey 1-0 that is available (or none).
+
 Advanced Adventures may wish to execute some JavaScript code when a
 particular choice is made. They can do so by providing an `execute`
 attribute. The code within will be executed before the next page is
@@ -292,6 +297,24 @@ The `Page` that will be displayed when an `<ending>` tag is encountered.
 Default value: `"cya_playfield"`
 
 The `Element` that all processed `Page`s will be displayed in.
+
+`cya.enable_hotkeys`
+--------------------
+
+Default value: `true`
+
+If true, choices can be selected by using the 1-0 keys to target
+the first through tenth choices. In addition,
+`<span class="cya_hotkey">#</span>` will precede the contents of each
+choice, where `#` is the hotkey. The hotkeys are always accessible using
+browser-specific AccessKeys, and are accessible directly whenever focus
+is not inside an `<input>` or `<textarea>` element.
+
+`<choice>` elements with an explicit `hotkey` attribute will use that
+hotkey instead of 1-0.
+
+Changes made to `enable_hotkeys` will take effect the next time a page
+is processed.
 
 `cya.scroll_view`
 -----------------
