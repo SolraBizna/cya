@@ -335,6 +335,15 @@ An `Element` that will have its height adjusted dynamically, so that the
 `scroll_view` can always scroll at least as far down as the selected
 choice. (Only applicable if `scroll_view` is also defined.)
 
+`cya.scroll_to_chosen_choice`
+-----------------------------
+
+Default value: `false`
+
+If `scroll_to_chosen_choice` is true, `scroll_view` will be scrolled to
+the _chosen_ choice. If false, (default) the view will be scrolled to
+the _first_ choice. (If `scroll_view` is null, this is ignored.)
+
 `cya.pivot_choices`
 -------------------
 

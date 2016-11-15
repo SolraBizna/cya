@@ -236,6 +236,12 @@ var cya = {
      */
     scroll_spacer:undefined,
     /**
+     * If `scroll_to_chosen_choice` is true, `scroll_view` will be scrolled to
+     * the _chosen_ choice. If false, (default) the view will be scrolled to
+     * the _first_ choice. (If `scroll_view` is null, this is ignored.)
+     */
+    scroll_to_chosen_choice:false,
+    /**
      * If `pivot_choices` is true, any `<choice>` selected by the player is
      * moved to the end of its page. This is useful if rejected choices are not
      * hidden, especially if `scroll_view` is used.
@@ -355,6 +361,7 @@ var cya = {
     // (Actually, this function is not passed directly; it is first bound to
     // a particular `choice` object.)
     var choice_listener = function() {
+        var first_choice = current_choices[0];
         clear_old_choices(this);
         var target_page = this.target_page;
         if(this.code) {
@@ -368,7 +375,8 @@ var cya = {
                 // inspired by: https://www.kirupa.com/html5
                 // /get_element_position_using_javascript.htm
                 var y = 0;
-                var el = this.node;
+                var el = cya.scroll_to_chosen_choice ? this.node
+                    : first_choice.node;
                 while(el != undefined && el != scroll_view) {
                     y += (el.offsetTop - el.scrollTop + el.clientTop);
                     el = el.offsetParent;
