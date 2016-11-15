@@ -457,7 +457,7 @@ var cya = {
         }
         if(chosen_hotkey != undefined) {
             choice.hotkey = chosen_hotkey;
-            current_hotkeys[hotkey] = choice
+            current_hotkeys[chosen_hotkey] = choice
             var hotspan = document.createElement("span");
             hotspan.setAttribute("class", "cya_hotkey");
             hotspan.appendChild(document.createTextNode(chosen_hotkey));
